@@ -6,10 +6,10 @@ from conans.tools import get
 
 class EmscriptenConan(ConanFile):
     name = "emscripten"
-    version = "1.37.13"
+    version = "1.37.21"
     license = "MIT/University of Illinois/NCSA Open Source - https://github.com/kripken/emscripten/blob/master/LICENSE"
     url = "https://github.com/sixten-hilborn/conan-emscripten"
-    settings = None
+    settings = None # "os", "arch", "compiler", "build_type"
     options = {
         "ems_path": "ANY"
     }
@@ -27,10 +27,10 @@ class EmscriptenConan(ConanFile):
 
     def build(self):
         get('https://github.com/kripken/emscripten/archive/{0}.zip'.format(self.version))
-        os.rename(self.folder, self.package_folder)
+        #os.rename(self.folder, self.package_folder)
 
     def package(self):
-        pass
+        self.copy('*', src=self.folder, dst='.', symlinks=True)
 
     def package_info(self):
         path = os.path
@@ -39,11 +39,12 @@ class EmscriptenConan(ConanFile):
         self.env_info.CC =  path.join(emsroot, 'emcc')
         self.env_info.CXX = path.join(emsroot, 'em++')
 
-        self.env_info.CONAN_CMAKE_SYSTEM_NAME = "Generic"
+        self.env_info.CONAN_CMAKE_SYSTEM_NAME = "Emscripten"
+        self.env_info.CONAN_CMAKE_TOOLCHAIN_FILE = os.path.join(emsroot, 'cmake', 'Modules', 'Platform')
         self.env_info.CONAN_DISABLE_CHECK_COMPILER = "True"
         self.env_info.CONAN_CMAKE_FIND_ROOT_PATH = sysroot
         #self.env_info.PATH.extend([os.path.join(self.package_folder, onedir) for onedir in self.cpp_info.bindirs])
-        self.env_info.PATH.extend([os.path.join(sysroot, onedir) for onedir in self.cpp_info.bindirs])
+        self.env_info.PATH.extend([emsroot] + [os.path.join(sysroot, onedir) for onedir in self.cpp_info.bindirs])
 
         ## Common flags to C, CXX and LINKER
         #flags = ["-fPIC"]

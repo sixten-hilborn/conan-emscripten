@@ -1,33 +1,22 @@
-from conans.model.conan_file import ConanFile
-from conans import CMake
+from conans import ConanFile, CMake
 import os
 
 
-############### CONFIGURE THESE VALUES ##################
-default_user = "hilborn"
-default_channel = "stable"
-#########################################################
-
-channel = os.getenv("CONAN_CHANNEL", default_channel)
-username = os.getenv("CONAN_USERNAME", default_user)
-
-
 class DefaultNameConan(ConanFile):
-    name = "DefaultName"
-    version = "0.1"
     settings = "os", "compiler", "arch", "build_type"
     generators = "cmake"
-    requires = "emscripten/1.37.13@%s/%s" % (username, channel)
 
     def build(self):
-        cmake = CMake(self.settings)
-        cmake.configure(build_dir='.')
-        cmake.build()
+        # TODO: Build via CMake
+        #cmake = CMake(self)
+        #cmake.configure(build_dir='.')
+        #cmake.build()
+        self.run("em++ " + os.path.join(self.conanfile_directory, 'example.cpp'))
 
     def imports(self):
         self.copy(pattern="*.dll", dst="bin", src="bin")
         self.copy(pattern="*.dylib", dst="bin", src="lib")
 
     def test(self):
-        #self.run("cd bin && .%sexample" % (os.sep))
-        self.run("em++ example.cpp")
+        if not os.path.isfile('a.out.js'):
+            raise Exception('Unable to compile with Emscripten')
